@@ -6,6 +6,7 @@ import { WebSocketServer, type WebSocket } from "ws";
 import { CommandRunner } from "./CommandRunner";
 import { DemoConductor } from "./DemoConductor";
 import { parseClientMessage } from "./messages";
+import { buildJoinUrlResponse } from "./network";
 import { RaceStore } from "./RaceStore";
 import type { CommandRunnerConfig, ServerMessage } from "../src/shared/types";
 
@@ -56,9 +57,27 @@ async function readCommandConfig(): Promise<CommandRunnerConfig | undefined> {
 }
 
 async function serveStatic(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const requestUrl = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
+  res.setHeader("access-control-allow-origin", "*");
+  res.setHeader("access-control-allow-methods", "GET, OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
   if (req.url === "/health") {
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
+  if (requestUrl.pathname === "/api/join-url") {
+    const appPort = requestUrl.searchParams.get("appPort") ?? "";
+    const appProtocol = requestUrl.searchParams.get("appProtocol") ?? "http:";
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(buildJoinUrlResponse(req, appPort, appProtocol)));
     return;
   }
 
@@ -68,7 +87,7 @@ async function serveStatic(req: IncomingMessage, res: ServerResponse): Promise<v
     return;
   }
 
-  const requestPath = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`).pathname;
+  const requestPath = requestUrl.pathname;
   const normalized = normalize(requestPath).replace(/^(\.\.[/\\])+/, "");
   const candidate = normalized === "/" ? join(distDir, "index.html") : join(distDir, normalized);
   const filePath = existsSync(candidate) && !candidate.endsWith("/") ? candidate : join(distDir, "index.html");

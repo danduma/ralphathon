@@ -27,16 +27,34 @@ export function ScreenRace() {
   const snapshot = useRaceSelector(selectSnapshot);
   const connected = useRaceSelector(selectConnected);
   const [qr, setQr] = useState("");
+  const [joinBaseUrl, setJoinBaseUrl] = useState("");
 
   useEffect(() => {
     raceManager.connect("screen");
   }, []);
 
+  useEffect(() => {
+    const serverPort = import.meta.env.DEV ? "8787" : window.location.port;
+    const serverBase = `${window.location.protocol}//${window.location.hostname}${serverPort ? `:${serverPort}` : ""}`;
+    const params = new URLSearchParams({
+      appProtocol: window.location.protocol,
+      appPort: window.location.port
+    });
+
+    fetch(`${serverBase}/api/join-url?${params.toString()}`)
+      .then((response) => response.json() as Promise<{ url: string }>)
+      .then((payload) => setJoinBaseUrl(payload.url))
+      .catch(() => {
+        const fallback = new URL("/phone", window.location.href);
+        setJoinBaseUrl(fallback.toString());
+      });
+  }, []);
+
   const phoneUrl = useMemo(() => {
-    const url = new URL("/phone", window.location.href);
+    const url = new URL(joinBaseUrl || "/phone", window.location.href);
     url.searchParams.set("session", snapshot.session.id);
-    return url.toString().replace(":5173", ":5173");
-  }, [snapshot.session.id]);
+    return url.toString();
+  }, [joinBaseUrl, snapshot.session.id]);
 
   useEffect(() => {
     QRCode.toDataURL(phoneUrl, { margin: 1, color: { dark: "#111111", light: "#f8fbff" }, width: 220 }).then(setQr).catch(() => setQr(""));

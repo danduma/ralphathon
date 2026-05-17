@@ -7,6 +7,7 @@ test("screen and phone clients share the typed race event stream", async ({ brow
   await expect(page.getByRole("button", { name: "Start demo" })).toBeVisible();
   await expect(page.getByLabel("Four lane Rube Goldberg race machine")).toContainText("Atlas Planner");
   await expect(page.getByLabel("Phone join QR")).toContainText("/phone?session=");
+  await expect(page.locator(".phone-link")).not.toContainText("127.0.0.1");
 
   const phoneContexts = await Promise.all([0, 1, 2, 3].map(() => browser.newContext({ viewport: { width: 390, height: 844 } })));
   const phones = await Promise.all(phoneContexts.map((context) => context.newPage()));

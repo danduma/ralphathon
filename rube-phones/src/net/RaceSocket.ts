@@ -15,8 +15,9 @@ export class RaceSocket {
   static defaultUrl(): string {
     const { protocol, hostname, port } = window.location;
     const wsProtocol = protocol === "https:" ? "wss:" : "ws:";
-    const targetPort = import.meta.env.DEV ? "8787" : port || "8787";
-    return `${wsProtocol}//${hostname}:${targetPort}/ws`;
+    const targetPort = import.meta.env.DEV ? "8787" : port;
+    const portSuffix = targetPort ? `:${targetPort}` : "";
+    return `${wsProtocol}//${hostname}${portSuffix}/ws`;
   }
 
   connect(onMessage: MessageHandler, onConnection: ConnectionHandler): void {
