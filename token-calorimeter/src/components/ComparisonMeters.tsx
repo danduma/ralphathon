@@ -28,7 +28,7 @@ function Meter({ label, value, percent }: { label: string; value: string; percen
         <span className="font-semibold text-enamel">{value}</span>
       </div>
       <div className="h-2 overflow-hidden rounded-sm bg-soot/70">
-        <div className="h-full rounded-sm bg-[linear-gradient(90deg,oklch(0.72_0.12_78),oklch(0.68_0.18_38))]" style={{ width: `${Math.max(4, percent)}%` }} />
+        <div className="meter-fill h-full rounded-sm" style={{ width: `${Math.max(4, percent)}%` }} />
       </div>
     </div>
   );

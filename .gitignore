@@ -1,1 +1,14 @@
 .DS_Store
+rag1_ssh.sh
+*.pem
+*.key
+id_rsa
+id_ed25519
+ssh/
+.ssh/
+devops/ssh/
+**/ssh/hetzner*
+**/*_ssh.sh
+**/.env
+**/.env.*
+!**/.env.example

@@ -9,18 +9,18 @@ export function TaskConsole() {
   const canSimplify = snapshot.status === "complete" && !!snapshot.swarmResult && !!snapshot.simpleResult;
 
   return (
-    <div className="museum-panel p-4 sm:p-5">
-      <div className="mb-5">
-        <p className="text-xs uppercase tracking-[0.24em] text-brass">Science museum for agent taste</p>
-        <h1 className="mt-2 text-3xl font-black leading-tight text-enamel sm:text-4xl">The Token Calorimeter</h1>
-        <p className="mt-3 max-w-[48ch] text-sm leading-6 text-enamel/78">
-          A tiny task enters. A furnace of agents wakes up.
+    <div className="surface p-4 sm:p-5">
+      <div className="mb-6">
+        <p className="eyebrow text-brass">Agent cost lab</p>
+        <h1 className="mt-2 text-3xl font-black leading-tight text-enamel">The Token Calorimeter</h1>
+        <p className="mt-3 max-w-[44ch] text-sm leading-6 text-enamel/70">
+          Compare an elaborate agent chain against one focused model call.
         </p>
       </div>
 
       <div className="grid gap-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.16em] text-brass">Preset tasks</label>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
+        <label className="eyebrow text-brass">Preset task</label>
+        <div className="preset-stack">
           {taskPresets.map((preset) => (
             <button
               key={preset.id}
@@ -36,7 +36,7 @@ export function TaskConsole() {
       </div>
 
       <div className="mt-4 grid gap-2">
-        <label htmlFor="custom-task" className="text-xs font-semibold uppercase tracking-[0.16em] text-brass">
+        <label htmlFor="custom-task" className="eyebrow text-brass">
           Custom task
         </label>
         <textarea
@@ -82,7 +82,7 @@ export function TaskConsole() {
       </div>
 
       {snapshot.lastSuccessfulReceipt ? (
-        <div className="mt-4 rounded-md border border-brass/25 bg-iron/55 p-3 text-xs leading-5 text-enamel/70">
+        <div className="last-receipt mt-4 text-xs leading-5 text-enamel/70">
           Last receipt: {snapshot.lastSuccessfulReceipt.swarmTokens} swarm tokens vs{" "}
           {snapshot.lastSuccessfulReceipt.simpleTokens} simple tokens.
         </div>

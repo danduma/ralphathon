@@ -8,7 +8,7 @@ export function AgentTracePanel() {
   const traces = [...snapshot.swarmTraces, ...snapshot.simpleTraces, ...snapshot.simplifiedTraces];
 
   return (
-    <div className="museum-panel p-4">
+    <div className="surface p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-brass">
           <ScrollText size={15} /> Agent Trace
@@ -22,7 +22,7 @@ export function AgentTracePanel() {
           ))}
         </div>
       ) : (
-        <div className="rounded-md border border-dashed border-brass/25 p-4 text-sm text-enamel/60">
+        <div className="rounded-md border border-dashed border-line p-4 text-sm text-enamel/60">
           Ignite the task to watch each station write, burn, and hand off.
         </div>
       )}

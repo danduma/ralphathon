@@ -6,6 +6,8 @@ export default {
     extend: {
       colors: {
         iron: "oklch(var(--iron) / <alpha-value>)",
+        panel: "oklch(var(--panel) / <alpha-value>)",
+        line: "oklch(var(--line) / <alpha-value>)",
         soot: "oklch(var(--soot) / <alpha-value>)",
         ember: "oklch(var(--ember) / <alpha-value>)",
         brass: "oklch(var(--brass) / <alpha-value>)",

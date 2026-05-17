@@ -4,9 +4,11 @@ test("main demo flow burns tokens, shows receipt, and simplifies", async ({ page
   await page.goto("/");
   await expect(page.getByText("The Token Calorimeter")).toBeVisible();
   await page.getByRole("button", { name: /10 minutes late/i }).click();
+  const initialFlameHeight = await page.getByTestId("flame-core").evaluate((element) => Number.parseFloat((element as HTMLElement).style.height));
   await page.getByRole("button", { name: /ignite/i }).click();
 
   await expect(page.getByTestId("token-counter")).not.toHaveText("0");
+  await expect.poll(async () => page.getByTestId("flame-core").evaluate((element) => Number.parseFloat((element as HTMLElement).style.height))).toBeGreaterThan(initialFlameHeight);
   await expect(page.getByRole("button", { name: /simplify/i })).toBeEnabled({ timeout: 15_000 });
   await expect(page.getByText("Same answer. Smaller fire.")).toBeVisible();
   await expect(page.getByTestId("receipt")).toBeVisible();

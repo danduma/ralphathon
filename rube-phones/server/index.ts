@@ -157,6 +157,14 @@ wsServer.on("connection", (ws) => {
         commandRunner?.stop();
         store.reset();
       }
+
+      if (message.type === "presenter.stop_haptics") {
+        store.appendEvent({
+          type: "race.haptics_stopped",
+          label: "Presenter stopped phone vibration",
+          severity: "info"
+        });
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown message error";
       send(ws, { type: "server.error", code: "bad_message", message });

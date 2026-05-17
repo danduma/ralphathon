@@ -265,6 +265,7 @@ export class CalorimeterManager {
   }
 
   private persistReceipt(): void {
+    if (typeof localStorage === "undefined") return;
     if (!this.snapshot.swarmResult || !this.snapshot.simpleResult) return;
     const receipt: LastReceipt = {
       task: this.snapshot.taskText,
@@ -280,6 +281,7 @@ export class CalorimeterManager {
 
   private readReceipt(): LastReceipt | undefined {
     try {
+      if (typeof localStorage === "undefined") return undefined;
       const raw = localStorage.getItem(receiptKey);
       return raw ? (JSON.parse(raw) as LastReceipt) : undefined;
     } catch {

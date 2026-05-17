@@ -1,4 +1,5 @@
 import { calculateCost } from "./pricing";
+import { z } from "zod";
 import type {
   AgentRole,
   AgentTrace,
@@ -58,6 +59,35 @@ const simpleRole = {
   systemPrompt: "Complete the user's tiny task directly. Be concise, natural, and human."
 };
 
+const simplifierRole = {
+  role: "simplifier" as const,
+  label: "Simplifier",
+  promptSummary: "Identifies unnecessary ceremony in the swarm trace.",
+  systemPrompt:
+    "You are the Token Calorimeter simplifier. Return only compact JSON with removedRoles, reason, expectedSavingsPercent, recommendedWorkflow, and removedReasons. Use only these removable roles: planner, contextResearcher, toneAnalyst, riskReviewer, finalWriter, verifier. Do not include markdown."
+};
+
+const removableRoles = ["planner", "contextResearcher", "toneAnalyst", "riskReviewer", "finalWriter", "verifier"] as const;
+
+const recommendationSchema = z.object({
+  removedRoles: z.array(z.enum(removableRoles)).min(1),
+  reason: z.string().trim().min(1),
+  expectedSavingsPercent: z.number().min(0).max(100),
+  recommendedWorkflow: z.string().trim().min(1),
+  removedReasons: z.partialRecord(z.enum(removableRoles), z.string().trim().min(1)).default({})
+});
+
+class MalformedRecommendationError extends Error {
+  details: string;
+
+  constructor(rawOutput: string, cause: unknown) {
+    super("The simplifier returned malformed recommendation JSON.");
+    this.name = "MalformedRecommendationError";
+    this.cause = cause;
+    this.details = `Raw simplifier output:\n${rawOutput || "(empty output)"}`;
+  }
+}
+
 export async function runSwarmWorkflow(task: string, client: ModelClient, emit: Emit): Promise<RunResult> {
   emit({ type: "run.started", mode: "swarm" });
   const traces: AgentTrace[] = [];
@@ -85,12 +115,13 @@ export async function runSimpleWorkflow(
   task: string,
   client: ModelClient,
   emit: Emit,
-  mode: RunMode = "simple"
+  mode: RunMode = "simple",
+  recommendation?: SimplificationRecommendation
 ): Promise<RunResult> {
   emit({ type: "run.started", mode });
   const trace = await runAgent(mode, simpleRole, task, "", client, emit);
   const result = { mode, task, finalOutput: trace.output, traces: [trace], metrics: sumMetrics([trace]) };
-  emit({ type: "run.done", result });
+  emit({ type: "run.done", result, recommendation });
   console.info("[token-calorimeter] simple complete", {
     mode,
     totalTokens: result.metrics.totalTokens,
@@ -105,10 +136,37 @@ export async function runSimplifyWorkflow(
   client: ModelClient,
   emit: Emit
 ): Promise<{ recommendation: SimplificationRecommendation; result: RunResult }> {
-  const recommendation = makeRecommendation(swarmTrace);
+  const recommendation = await requestRecommendation(task, swarmTrace, client, emit);
   emit({ type: "recommendation", recommendation });
-  const result = await runSimpleWorkflow(task, client, emit, "simplified");
+  const result = await runSimpleWorkflow(task, client, emit, "simplified", recommendation);
   return { recommendation, result };
+}
+
+async function requestRecommendation(
+  task: string,
+  swarmTrace: AgentTrace[],
+  client: ModelClient,
+  emit: Emit
+): Promise<SimplificationRecommendation> {
+  const compactTrace = swarmTrace.map((trace) => ({
+    role: trace.role,
+    label: trace.label,
+    tokens: trace.metrics.totalTokens,
+    output: trace.output.slice(0, 700)
+  }));
+  const trace = await runAgent(
+    "simplified",
+    simplifierRole,
+    task,
+    `Swarm trace JSON:\n${JSON.stringify(compactTrace)}`,
+    client,
+    emit
+  );
+  try {
+    return recommendationSchema.parse(JSON.parse(extractJson(trace.output)));
+  } catch (error) {
+    throw new MalformedRecommendationError(trace.output, error);
+  }
 }
 
 async function runAgent(
@@ -152,7 +210,7 @@ async function runAgent(
         inputTokens: event.usage.inputTokens,
         outputTokens: event.usage.outputTokens,
         totalTokens: event.usage.totalTokens,
-        estimatedCostUsd: calculateCost(event.usage, process.env.OPENAI_MODEL || "gpt-4.1-mini"),
+        estimatedCostUsd: calculateCost(event.usage, client.model || process.env.OPENAI_MODEL || "gpt-4.1-mini"),
         elapsedMs: Date.now() - startedAt
       };
     }
@@ -192,24 +250,8 @@ function composeSwarmAnswer(finalWriter: string, verifier: string): string {
   return finalLine;
 }
 
-function makeRecommendation(swarmTrace: AgentTrace[]): SimplificationRecommendation {
-  const removedRoles: AgentRole[] = ["planner", "contextResearcher", "riskReviewer", "verifier"];
-  const swarmTokens = sumMetrics(swarmTrace).totalTokens;
-  const keptTokens = swarmTrace
-    .filter((trace) => !removedRoles.includes(trace.role))
-    .reduce((sum, trace) => sum + trace.metrics.totalTokens, 0);
-  const expectedSavingsPercent = Math.max(35, Math.round((1 - keptTokens / Math.max(swarmTokens, 1)) * 100));
-  return {
-    removedRoles,
-    expectedSavingsPercent,
-    recommendedWorkflow: "One direct model call with a concise human tone instruction.",
-    reason:
-      "The task has low ambiguity, low risk, and no external dependency. The useful work is the final sentence, not the ceremony around it.",
-    removedReasons: {
-      planner: "The task is already one step.",
-      contextResearcher: "The needed context is inside the sentence.",
-      riskReviewer: "The social risk is low and obvious.",
-      verifier: "A direct concise response is easy to inspect."
-    }
-  };
+function extractJson(raw: string): string {
+  const trimmed = raw.trim();
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  return fenced?.[1]?.trim() ?? trimmed;
 }

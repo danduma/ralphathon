@@ -66,4 +66,28 @@ describe("CalorimeterManager", () => {
     expect(manager.getSnapshot().status).toBe("idle");
     expect(manager.getSnapshot().swarmResult).toBeUndefined();
   });
+
+  it("handles network interruption and retries with a fresh comparison run", async () => {
+    vi.stubGlobal("fetch", vi.fn()
+      .mockRejectedValueOnce(new TypeError("network interruption"))
+      .mockResolvedValueOnce(new Response(stream([
+        { type: "run.started", mode: "swarm" },
+        { type: "run.done", result: { mode: "swarm", task: "x", finalOutput: "swarm", traces: [], metrics: { inputTokens: 2, outputTokens: 3, totalTokens: 5, estimatedCostUsd: 0.00001, elapsedMs: 20 } } }
+      ]), { status: 200, headers: { "Content-Type": "text/event-stream" } }))
+      .mockResolvedValueOnce(new Response(stream([
+        { type: "run.started", mode: "simple" },
+        { type: "run.done", result: { mode: "simple", task: "x", finalOutput: "simple", traces: [], metrics: { inputTokens: 1, outputTokens: 1, totalTokens: 2, estimatedCostUsd: 0.000004, elapsedMs: 10 } } }
+      ]), { status: 200, headers: { "Content-Type": "text/event-stream" } })));
+
+    const manager = new CalorimeterManager();
+    manager.setTask("x");
+    await manager.startComparisonRun();
+    expect(manager.getSnapshot().status).toBe("error");
+    expect(manager.getSnapshot().latestError?.message).toContain("network interruption");
+
+    await manager.retry();
+    expect(manager.getSnapshot().status).toBe("complete");
+    expect(manager.getSnapshot().swarmResult?.finalOutput).toBe("swarm");
+    expect(manager.getSnapshot().simpleResult?.finalOutput).toBe("simple");
+  });
 });

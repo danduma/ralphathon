@@ -77,6 +77,8 @@ export function parseClientMessage(raw: string): ClientMessage {
     }
     case "presenter.reset":
       return { type: "presenter.reset" };
+    case "presenter.stop_haptics":
+      return { type: "presenter.stop_haptics" };
     default:
       throw new Error(`Unknown message type: ${parsed.type}`);
   }

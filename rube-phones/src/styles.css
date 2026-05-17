@@ -137,9 +137,59 @@ h1 {
 .machine {
   position: relative;
   display: grid;
-  gap: 12px;
+  gap: 14px;
   padding: 18px;
   flex: 1;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at var(--race-heat-position) 0%, rgba(245, 197, 66, 0.14), transparent 22rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0));
+}
+
+.machine-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.factory-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background:
+    linear-gradient(90deg, rgba(244, 241, 232, 0.08) 1px, transparent 1px) 0 0 / 54px 54px,
+    linear-gradient(rgba(244, 241, 232, 0.05) 1px, transparent 1px) 0 0 / 54px 54px;
+  mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+}
+
+.overhead-crane {
+  position: absolute;
+  left: 3%;
+  right: 8%;
+  top: 16px;
+  height: 10px;
+  border-block: 1px solid rgba(244, 241, 232, 0.16);
+  background: repeating-linear-gradient(90deg, rgba(244, 241, 232, 0.12) 0 16px, transparent 16px 31px);
+}
+
+.pressure-line {
+  position: absolute;
+  left: -10%;
+  width: 120%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(33, 212, 168, 0.28), transparent);
+  transform: rotate(-1deg);
+}
+
+.pressure-line-one {
+  top: 34%;
+}
+
+.pressure-line-two {
+  top: 68%;
+  background: linear-gradient(90deg, transparent, rgba(245, 197, 66, 0.26), transparent);
 }
 
 .finish-column {
@@ -169,14 +219,45 @@ h1 {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(150px, 220px) minmax(0, 1fr) minmax(120px, 190px);
+  grid-template-columns: minmax(132px, 180px) minmax(360px, 1fr) minmax(126px, 200px);
+  --machine-stroke: 8;
   align-items: center;
-  min-height: 128px;
+  min-height: 142px;
   border: 1px solid color-mix(in srgb, var(--lane-color) 35%, var(--line));
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--lane-color) 14%, transparent), transparent 42%),
+    linear-gradient(90deg, color-mix(in srgb, var(--lane-color) 16%, transparent), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.01)),
     #141615;
   overflow: hidden;
+  isolation: isolate;
+}
+
+.machine-lane::before,
+.machine-lane::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.machine-lane::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at var(--progress-position) 44%, color-mix(in srgb, var(--lane-color) 18%, transparent), transparent 9rem),
+    repeating-linear-gradient(-8deg, rgba(244, 241, 232, 0.035) 0 1px, transparent 1px 16px);
+  opacity: 0.86;
+}
+
+.machine-lane::after {
+  left: var(--progress-position);
+  top: 9px;
+  width: 84px;
+  height: 84px;
+  border: 1px solid color-mix(in srgb, var(--lane-color) 42%, transparent);
+  border-radius: 999px;
+  opacity: 0.28;
+  transform: translateX(-50%);
+  animation: sonarPulse 1s ease-out infinite;
 }
 
 .machine-lane.winner {
@@ -213,56 +294,347 @@ h1 {
 .track-shell {
   position: relative;
   min-width: 0;
-  padding: 10px 0;
+  padding: 4px 0 12px;
 }
 
 .track-svg {
   display: block;
   width: 100%;
-  height: 108px;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.diagram-plate {
+  fill: rgba(244, 241, 232, 0.025);
+  stroke: rgba(244, 241, 232, 0.12);
+  stroke-width: 2;
+}
+
+.diagram-grid {
+  fill: none;
+  stroke: rgba(244, 241, 232, 0.055);
+  stroke-width: 1.5;
+}
+
+.build-table {
+  fill: none;
+  stroke: rgba(244, 241, 232, 0.28);
+  stroke-linecap: round;
+  stroke-width: 9;
 }
 
 .track-rail,
-.track-energy {
+.track-energy,
+.track-shadow,
+.secondary-rail,
+.secondary-energy {
   fill: none;
-  stroke-width: 8;
+  stroke-width: 12;
   stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.track-shadow {
+  stroke: rgba(9, 10, 10, 0.48);
+  stroke-width: 26;
+  transform: translateY(12px);
 }
 
 .track-rail {
-  stroke: rgba(244, 241, 232, 0.2);
+  stroke: rgba(244, 241, 232, 0.24);
 }
 
 .track-energy {
-  stroke: var(--lane-color);
   stroke-dasharray: 1000;
   transition: stroke-dashoffset 450ms ease;
   filter: drop-shadow(0 0 8px var(--lane-color));
 }
 
+.secondary-rail {
+  stroke: rgba(244, 241, 232, 0.12);
+  stroke-width: 7;
+}
+
+.secondary-energy {
+  stroke: var(--lane-color);
+  stroke-width: 6;
+  stroke-dasharray: 1000;
+  opacity: 0.55;
+  transition: stroke-dashoffset 550ms ease;
+}
+
+.cup-rig path,
+.funnel-rig path,
+.toy-car path,
+.toy-car rect,
+.button-rig rect,
+.phone-rig path,
+.phone-body,
+.phone-screen,
+.phone-button,
+.domino,
+.lever-rig path,
+.seesaw-rig path,
+.gate-rig path {
+  vector-effect: non-scaling-stroke;
+}
+
+.cup-rig path,
+.funnel-rig path,
+.button-rig rect,
+.phone-body {
+  fill: #101211;
+  stroke: var(--lane-accent);
+  stroke-linejoin: round;
+  stroke-width: var(--machine-stroke);
+}
+
+.cup-rig circle {
+  fill: var(--lane-color);
+  stroke: #101211;
+  stroke-width: var(--machine-stroke);
+}
+
+.ramp-rig path:not(.track-rail):not(.track-energy):not(.track-shadow),
+.lever-rig path,
+.seesaw-rig path,
+.gate-rig path,
+.phone-rig path {
+  fill: none;
+  stroke: var(--lane-color);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: var(--machine-stroke);
+}
+
+.domino {
+  fill: #f4f1e8;
+  stroke: #101211;
+  stroke-width: var(--machine-stroke);
+  transition: transform 420ms cubic-bezier(0.18, 0.9, 0.28, 1);
+}
+
+.lever-rig {
+  transform: rotate(var(--lever-angle));
+  transform-box: view-box;
+  transform-origin: 500px 364px;
+  transition: transform 520ms cubic-bezier(0.18, 0.9, 0.28, 1);
+}
+
+.lever-rig circle,
+.seesaw-rig circle {
+  fill: #101211;
+  stroke: var(--lane-accent);
+  stroke-width: var(--machine-stroke);
+}
+
+.cue-lever .lever-rig,
+.cue-marble .lever-rig,
+.cue-lights .lever-rig {
+  animation: leverThrow 700ms cubic-bezier(0.3, 1.6, 0.45, 1);
+}
+
+.funnel-rig {
+  transform: rotate(var(--funnel-angle));
+  transform-box: view-box;
+  transform-origin: 653px 230px;
+  transition: transform 520ms cubic-bezier(0.18, 0.9, 0.28, 1);
+}
+
+.cue-spark .funnel-rig,
+.cue-warning .funnel-rig,
+.cue-recover .funnel-rig {
+  animation: funnelKnock 640ms ease-in-out 2;
+}
+
+.seesaw-rig {
+  transform: rotate(var(--seesaw-angle));
+  transform-box: view-box;
+  transform-origin: 780px 410px;
+  transition: transform 520ms cubic-bezier(0.18, 0.9, 0.28, 1);
+}
+
+.pull-string {
+  stroke-dasharray: 12 10;
+}
+
+.gate-door {
+  transform: rotate(var(--gate-angle));
+  transform-box: view-box;
+  transform-origin: 900px 332px;
+  transition: transform 520ms cubic-bezier(0.18, 0.9, 0.28, 1);
+}
+
+.car-track {
+  stroke: rgba(244, 241, 232, 0.38);
+}
+
+.toy-car {
+  transform: translateX(var(--car-offset));
+  transform-box: view-box;
+  transition: transform 520ms cubic-bezier(0.18, 0.9, 0.28, 1);
+}
+
+.toy-car path,
+.toy-car rect {
+  fill: color-mix(in srgb, var(--lane-color) 28%, #101211);
+  stroke: var(--lane-accent);
+  stroke-linejoin: round;
+  stroke-width: var(--machine-stroke);
+}
+
+.car-wheel {
+  fill: #101211;
+  stroke: var(--lane-accent);
+  stroke-width: var(--machine-stroke);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wheelSpin 880ms linear infinite;
+}
+
+.button-cap {
+  transform: translateY(calc(var(--button-depth) * 22px));
+  transition: transform 360ms cubic-bezier(0.18, 0.9, 0.28, 1);
+}
+
+.phone-rig {
+  transform-origin: 1202px 292px;
+}
+
+.phone-body {
+  fill-opacity: calc(0.32 + var(--phone-energy) * 0.68);
+  filter: drop-shadow(0 0 calc(var(--phone-energy) * 24px) var(--lane-color));
+  transition: fill-opacity 360ms ease, filter 360ms ease;
+}
+
+.phone-screen {
+  fill: #101211;
+  stroke: var(--lane-color);
+  stroke-width: var(--machine-stroke);
+}
+
+.phone-button {
+  fill: var(--lane-accent);
+  stroke: #101211;
+  stroke-width: 5;
+}
+
+.phone-glow {
+  fill: var(--lane-color);
+  opacity: calc(var(--phone-energy) * 0.2);
+  transition: opacity 360ms ease;
+  animation: phonePulse 1.1s ease-in-out infinite;
+}
+
+.phone-vibe,
+.phone-buzz {
+  opacity: calc(0.12 + var(--phone-energy) * 0.82);
+  transition: opacity 360ms ease;
+}
+
 .marble {
   fill: var(--lane-accent);
-  stroke: #111;
-  stroke-width: 5;
-  transition: cx 450ms ease, cy 450ms ease;
+  stroke: #101211;
+  stroke-width: var(--machine-stroke);
+  transition:
+    cx 450ms cubic-bezier(0.22, 0.9, 0.28, 1),
+    cy 450ms cubic-bezier(0.22, 0.9, 0.28, 1),
+    opacity 260ms ease;
 }
 
-.gate {
-  fill: #111313;
-  stroke: var(--lane-color);
-  stroke-width: 4;
+.marble-main {
+  filter: drop-shadow(0 0 12px var(--lane-color));
 }
 
-.bell {
-  fill: color-mix(in srgb, var(--lane-color) 26%, #111313);
-  stroke: var(--lane-accent);
-  stroke-width: 5;
+.marble-shadow {
+  fill: color-mix(in srgb, var(--lane-color) 65%, #111313);
+  opacity: 0.42;
+  stroke-width: 0;
+}
+
+.machine-lane.winner .phone-rig,
+.cue-bell .phone-rig,
+.cue-finish .phone-rig {
+  animation: phoneVibrate 120ms linear infinite;
+}
+
+.station-marker {
+  opacity: 0.55;
+}
+
+.station-marker line {
+  stroke: rgba(244, 241, 232, 0.12);
+  stroke-dasharray: 4 8;
+}
+
+.station-marker circle {
+  fill: var(--lane-color);
+  stroke: #101211;
+  stroke-width: 3;
+}
+
+.station-marker text {
+  fill: rgba(244, 241, 232, 0.68);
+  font-size: 23px;
+  font-weight: 900;
+  text-anchor: middle;
+  text-transform: uppercase;
+}
+
+.machine-parts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.spark {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--lane-accent);
+  box-shadow: 0 0 18px 4px var(--lane-color);
+  opacity: 0;
+}
+
+.spark-one {
+  left: 43%;
+  top: 46%;
+}
+
+.spark-two {
+  left: 62%;
+  top: 58%;
+}
+
+.spark-three {
+  left: 78%;
+  top: 38%;
+}
+
+.cue-spark .spark,
+.cue-fault .spark,
+.cue-alarm .spark,
+.cue-recover .spark {
+  animation: sparkPop 780ms ease-out infinite;
+}
+
+.cue-fault,
+.cue-alarm {
+  border-color: color-mix(in srgb, var(--danger) 72%, var(--line));
+}
+
+.cue-fault .track-shell,
+.cue-alarm .track-shell {
+  animation: dangerRattle 170ms linear 5;
 }
 
 .progress-readout {
   position: absolute;
   right: 12px;
-  bottom: 0;
+  bottom: -2px;
   display: flex;
   gap: 10px;
 }
@@ -272,6 +644,21 @@ h1 {
   border-left: 3px solid var(--lane-color);
   padding: 10px 12px;
   background: rgba(0, 0, 0, 0.22);
+  display: grid;
+  gap: 7px;
+}
+
+.event-chip span,
+.event-chip strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.event-chip strong {
+  color: #f4f1e8;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  text-transform: none;
 }
 
 .control-column {
@@ -321,6 +708,11 @@ h1 {
 
 .control-button.danger {
   border-color: rgba(255, 91, 121, 0.55);
+}
+
+.control-button.warning {
+  border-color: rgba(245, 197, 66, 0.72);
+  background: linear-gradient(180deg, rgba(245, 197, 66, 0.2), rgba(245, 197, 66, 0.06));
 }
 
 .join-panel,
@@ -498,6 +890,100 @@ h1 {
   }
   to {
     box-shadow: inset 0 0 24px color-mix(in srgb, var(--lane-color) 16%, transparent);
+  }
+}
+
+@keyframes sonarPulse {
+  0% {
+    opacity: 0.32;
+    transform: translateX(-50%) scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.4);
+  }
+}
+
+@keyframes leverThrow {
+  0%,
+  100% {
+    transform: rotate(var(--lever-angle));
+  }
+  45% {
+    transform: rotate(-18deg);
+  }
+  70% {
+    transform: rotate(10deg);
+  }
+}
+
+@keyframes funnelKnock {
+  0%,
+  100% {
+    transform: translateX(0) rotate(var(--funnel-angle));
+  }
+  35% {
+    transform: translateX(-6px) rotate(calc(var(--funnel-angle) - 2deg));
+  }
+  70% {
+    transform: translateX(5px) rotate(calc(var(--funnel-angle) + 2deg));
+  }
+}
+
+@keyframes wheelSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sparkPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  38% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(18px, -16px) scale(0.2);
+  }
+}
+
+@keyframes phonePulse {
+  0%,
+  100% {
+    transform: scale(0.96);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes phoneVibrate {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(-4px, 2px) rotate(-2deg);
+  }
+  50% {
+    transform: translate(3px, -2px) rotate(2deg);
+  }
+  75% {
+    transform: translate(4px, 1px) rotate(1deg);
+  }
+}
+
+@keyframes dangerRattle {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
   }
 }
 

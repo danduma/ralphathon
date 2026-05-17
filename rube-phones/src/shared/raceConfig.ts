@@ -32,13 +32,13 @@ export const lanes: LaneDefinition[] = [
 ];
 
 export const stageDefinitions: StageDefinition[] = [
-  { id: "lobby", label: "Lobby", progressAt: 0, cue: "idle" },
-  { id: "launch", label: "Launch ramp", progressAt: 10, cue: "marble" },
-  { id: "plan", label: "Planning lever", progressAt: 25, cue: "lever" },
-  { id: "tool", label: "Tool chute", progressAt: 45, cue: "spark" },
-  { id: "recover", label: "Recovery fork", progressAt: 58, cue: "warning" },
-  { id: "verify", label: "Verification lock", progressAt: 78, cue: "lock" },
-  { id: "finish", label: "Finish bell", progressAt: 100, cue: "bell" }
+  { id: "lobby", label: "On the blocks", progressAt: 0, cue: "ready" },
+  { id: "launch", label: "Ball drop", progressAt: 10, cue: "drop" },
+  { id: "plan", label: "Route picked", progressAt: 25, cue: "lever" },
+  { id: "tool", label: "Tools firing", progressAt: 45, cue: "spark" },
+  { id: "recover", label: "Trouble lane", progressAt: 58, cue: "warning" },
+  { id: "verify", label: "Checks running", progressAt: 78, cue: "lock" },
+  { id: "finish", label: "Bell rung", progressAt: 100, cue: "bell" }
 ];
 
 export const hapticPatterns: Record<HapticPatternId, number[]> = {
@@ -48,55 +48,43 @@ export const hapticPatterns: Record<HapticPatternId, number[]> = {
   failure: [220, 80, 120, 80, 220],
   recovery: [50, 45, 100, 45, 160],
   verify: [95, 90, 95, 90, 95],
-  win: [70, 40, 70, 40, 170, 60, 220]
+  win: [10000]
 };
 
 export const eventHapticMap: Partial<Record<RaceEventType, HapticPatternId>> = {
-  "race.countdown_started": "start",
-  "agent.started": "start",
-  "agent.planned": "plan",
-  "agent.tool_called": "tool",
-  "agent.tool_completed": "tool",
-  "agent.failed": "failure",
-  "error.surfaced": "failure",
-  "agent.recovered": "recovery",
-  "verification.started": "verify",
-  "verification.failed": "failure",
-  "verification.passed": "verify",
-  "agent.finished": "win",
   "race.finished": "win"
 };
 
 export const deterministicDemoScript: DemoScriptStep[] = [
-  { delayMs: 150, type: "race.countdown_started", label: "Countdown lights are hot", progressDelta: 0, animationCue: "lights" },
-  { delayMs: 500, laneId: "lane-1", type: "agent.started", label: "Atlas drops the first marble", progressDelta: 10 },
-  { delayMs: 100, laneId: "lane-2", type: "agent.started", label: "Bolt spins up the gear train", progressDelta: 10 },
-  { delayMs: 100, laneId: "lane-3", type: "agent.started", label: "Nova arms the recovery chute", progressDelta: 10 },
-  { delayMs: 100, laneId: "lane-4", type: "agent.started", label: "Quill primes the finish bell", progressDelta: 10 },
-  { delayMs: 650, laneId: "lane-1", type: "agent.planned", label: "Atlas chooses a low-risk route", progressDelta: 18 },
-  { delayMs: 100, laneId: "lane-2", type: "agent.planned", label: "Bolt sketches a build sequence", progressDelta: 18 },
-  { delayMs: 100, laneId: "lane-3", type: "agent.planned", label: "Nova plans a quick patch", progressDelta: 18 },
-  { delayMs: 100, laneId: "lane-4", type: "agent.planned", label: "Quill defines acceptance checks", progressDelta: 18 },
-  { delayMs: 650, laneId: "lane-1", type: "agent.tool_called", label: "Atlas runs search and inspection", progressDelta: 18 },
-  { delayMs: 100, laneId: "lane-2", type: "agent.tool_called", label: "Bolt opens the build jig", progressDelta: 18 },
-  { delayMs: 100, laneId: "lane-3", type: "agent.tool_called", label: "Nova touches the risky circuit", progressDelta: 12 },
-  { delayMs: 100, laneId: "lane-4", type: "agent.tool_called", label: "Quill starts trace capture", progressDelta: 18 },
-  { delayMs: 650, laneId: "lane-3", type: "agent.failed", label: "Nova trips a failing assertion", progressDelta: -4, severity: "error", animationCue: "fault" },
-  { delayMs: 200, laneId: "lane-3", type: "error.surfaced", label: "Stack trace is surfaced to the board", progressDelta: 0, severity: "error", animationCue: "alarm" },
-  { delayMs: 650, laneId: "lane-1", type: "agent.tool_completed", label: "Atlas clears the inspection gate", progressDelta: 18 },
-  { delayMs: 100, laneId: "lane-2", type: "agent.tool_completed", label: "Bolt snaps the last relay into place", progressDelta: 18 },
-  { delayMs: 100, laneId: "lane-4", type: "agent.tool_completed", label: "Quill captures a clean baseline", progressDelta: 18 },
-  { delayMs: 650, laneId: "lane-3", type: "agent.recovered", label: "Nova routes through the recovery fork", progressDelta: 20, severity: "success", animationCue: "recover" },
-  { delayMs: 500, laneId: "lane-1", type: "verification.started", label: "Atlas enters verification lock", progressDelta: 14 },
-  { delayMs: 100, laneId: "lane-2", type: "verification.started", label: "Bolt runs smoke checks", progressDelta: 14 },
-  { delayMs: 100, laneId: "lane-3", type: "verification.started", label: "Nova retries verification", progressDelta: 14 },
-  { delayMs: 100, laneId: "lane-4", type: "verification.started", label: "Quill validates the trace", progressDelta: 14 },
-  { delayMs: 650, laneId: "lane-3", type: "verification.failed", label: "Nova catches one more mismatch", progressDelta: -2, severity: "warning" },
-  { delayMs: 500, laneId: "lane-1", type: "verification.passed", label: "Atlas verification passes", progressDelta: 16, severity: "success" },
-  { delayMs: 120, laneId: "lane-2", type: "verification.passed", label: "Bolt verification passes", progressDelta: 16, severity: "success" },
-  { delayMs: 120, laneId: "lane-4", type: "verification.passed", label: "Quill verification passes", progressDelta: 16, severity: "success" },
-  { delayMs: 450, laneId: "lane-1", type: "agent.finished", label: "Atlas rings the verified finish bell", progressDelta: 8, severity: "success" },
-  { delayMs: 250, laneId: "lane-3", type: "verification.passed", label: "Nova finally proves the fix", progressDelta: 20, severity: "success" },
-  { delayMs: 150, laneId: "lane-3", type: "agent.finished", label: "Nova crosses after recovery", progressDelta: 8, severity: "success" },
-  { delayMs: 200, type: "race.finished", label: "Verified race complete", progressDelta: 0, severity: "success", animationCue: "finish" }
+  { delayMs: 150, type: "race.countdown_started", label: "Lights on. Everybody hold the phone tight.", progressDelta: 0, animationCue: "lights" },
+  { delayMs: 500, laneId: "lane-1", type: "agent.started", label: "Atlas drops the first ball.", progressDelta: 10 },
+  { delayMs: 100, laneId: "lane-2", type: "agent.started", label: "Bolt gets the gears moving.", progressDelta: 10 },
+  { delayMs: 100, laneId: "lane-3", type: "agent.started", label: "Nova takes the risky chute.", progressDelta: 10 },
+  { delayMs: 100, laneId: "lane-4", type: "agent.started", label: "Quill heads for the bell.", progressDelta: 10 },
+  { delayMs: 650, laneId: "lane-1", type: "agent.planned", label: "Atlas picks the careful route.", progressDelta: 18 },
+  { delayMs: 100, laneId: "lane-2", type: "agent.planned", label: "Bolt lines up the build.", progressDelta: 18 },
+  { delayMs: 100, laneId: "lane-3", type: "agent.planned", label: "Nova gambles on a fast patch.", progressDelta: 18 },
+  { delayMs: 100, laneId: "lane-4", type: "agent.planned", label: "Quill writes down what has to pass.", progressDelta: 18 },
+  { delayMs: 650, laneId: "lane-1", type: "agent.tool_called", label: "Atlas searches the room.", progressDelta: 18 },
+  { delayMs: 100, laneId: "lane-2", type: "agent.tool_called", label: "Bolt fires up the build tool.", progressDelta: 18 },
+  { delayMs: 100, laneId: "lane-3", type: "agent.tool_called", label: "Nova touches the suspicious wire.", progressDelta: 12 },
+  { delayMs: 100, laneId: "lane-4", type: "agent.tool_called", label: "Quill starts recording evidence.", progressDelta: 18 },
+  { delayMs: 650, laneId: "lane-3", type: "agent.failed", label: "Nova hits a failing test.", progressDelta: -4, severity: "error", animationCue: "fault" },
+  { delayMs: 200, laneId: "lane-3", type: "error.surfaced", label: "The stack trace goes on the board.", progressDelta: 0, severity: "error", animationCue: "alarm" },
+  { delayMs: 650, laneId: "lane-1", type: "agent.tool_completed", label: "Atlas gets through inspection.", progressDelta: 18 },
+  { delayMs: 100, laneId: "lane-2", type: "agent.tool_completed", label: "Bolt snaps the relay into place.", progressDelta: 18 },
+  { delayMs: 100, laneId: "lane-4", type: "agent.tool_completed", label: "Quill has a clean baseline.", progressDelta: 18 },
+  { delayMs: 650, laneId: "lane-3", type: "agent.recovered", label: "Nova recovers and keeps moving.", progressDelta: 20, severity: "success", animationCue: "recover" },
+  { delayMs: 500, laneId: "lane-1", type: "verification.started", label: "Atlas starts the checks.", progressDelta: 14 },
+  { delayMs: 100, laneId: "lane-2", type: "verification.started", label: "Bolt runs smoke tests.", progressDelta: 14 },
+  { delayMs: 100, laneId: "lane-3", type: "verification.started", label: "Nova tries the checks again.", progressDelta: 14 },
+  { delayMs: 100, laneId: "lane-4", type: "verification.started", label: "Quill checks the trace.", progressDelta: 14 },
+  { delayMs: 650, laneId: "lane-3", type: "verification.failed", label: "Nova still has one mismatch.", progressDelta: -2, severity: "warning" },
+  { delayMs: 500, laneId: "lane-1", type: "verification.passed", label: "Atlas passes.", progressDelta: 16, severity: "success" },
+  { delayMs: 120, laneId: "lane-2", type: "verification.passed", label: "Bolt passes.", progressDelta: 16, severity: "success" },
+  { delayMs: 120, laneId: "lane-4", type: "verification.passed", label: "Quill passes.", progressDelta: 16, severity: "success" },
+  { delayMs: 450, laneId: "lane-1", type: "agent.finished", label: "Atlas rings the bell first.", progressDelta: 8, severity: "success" },
+  { delayMs: 250, laneId: "lane-3", type: "verification.passed", label: "Nova finally proves the fix.", progressDelta: 20, severity: "success" },
+  { delayMs: 150, laneId: "lane-3", type: "agent.finished", label: "Nova limps across after the save.", progressDelta: 8, severity: "success" },
+  { delayMs: 200, type: "race.finished", label: "Race over. The checked work wins.", progressDelta: 0, severity: "success", animationCue: "finish" }
 ];

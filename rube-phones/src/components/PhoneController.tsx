@@ -3,7 +3,14 @@ import { useCallback, useEffect } from "react";
 import { EventLog } from "./EventLog";
 import { hapticsManager, useHapticsSnapshot } from "../state/HapticsManager";
 import { raceManager, useRaceSelector } from "../state/RaceManager";
-import type { LaneId, RaceEvent, RaceSnapshot } from "../shared/types";
+import type { LaneId, RaceEvent, RaceSnapshot, RaceStatus } from "../shared/types";
+
+const raceStatusLabels: Record<RaceStatus, string> = {
+  lobby: "Waiting",
+  countdown: "Starting",
+  running: "Racing",
+  finished: "Done"
+};
 
 export function PhoneController() {
   const haptics = useHapticsSnapshot();
@@ -26,13 +33,21 @@ export function PhoneController() {
   const laneEvents = assignedLane?.eventHistory ?? [];
 
   useEffect(() => {
-    if (!lastEvent?.hapticPatternId || !assignedLane || lastEvent.laneId !== assignedLane.id) return;
-    const result = hapticsManager.runPattern(lastEvent.hapticPatternId);
-    raceManager.reportHapticsResult(result === "supported", result);
+    if (!lastEvent) return;
+    if (lastEvent.type === "race.finished") {
+      const result = hapticsManager.startFinalBuzz();
+      raceManager.reportHapticsResult(result === "supported", result);
+      return;
+    }
+    if (lastEvent.type === "race.haptics_stopped" || lastEvent.type === "race.reset") {
+      hapticsManager.stopFinalBuzz();
+    }
   }, [assignedLane, lastEvent]);
 
   const join = (laneId?: LaneId) => {
     raceManager.joinLane(laneId);
+    const result = hapticsManager.prime();
+    raceManager.reportHapticsResult(result === "supported", result);
   };
 
   const testHaptics = () => {
@@ -46,24 +61,24 @@ export function PhoneController() {
       style={{ "--lane-color": assignedLane?.color ?? "#21d4a8", "--lane-accent": assignedLane?.accent ?? "#a4ffe9" } as CSSProperties}
     >
       <section className="phone-hero">
-        <div className={`connection-pill ${connected ? "online" : "offline"}`}>{connected ? "connected" : "reconnecting"}</div>
-        <p className="eyebrow">Phone controller</p>
-        <h1>{assignedLane?.label ?? "Choose a lane"}</h1>
-        <p className="phone-event">{assignedLane?.currentEvent?.label ?? "Waiting for the next race event"}</p>
+        <div className={`connection-pill ${connected ? "online" : "offline"}`}>{connected ? "Live" : "Reconnecting"}</div>
+        <p className="eyebrow">Your phone is a lane buzzer</p>
+        <h1>{assignedLane?.label ?? "Pick a racer"}</h1>
+        <p className="phone-event">{assignedLane?.currentEvent?.label ?? "Your phone will flash, buzz, or beep with your lane."}</p>
         <div className="phone-status-grid">
-          <span>Haptics</span>
-          <strong>{haptics.support === "supported" ? "vibration ready" : "visual pulse only"}</strong>
+          <span>Feedback</span>
+          <strong>{haptics.support === "supported" ? "Vibration ready" : "Flash and sound"}</strong>
           <span>Race</span>
-          <strong>{snapshot?.session.status ?? "lobby"}</strong>
+          <strong>{snapshot ? raceStatusLabels[snapshot.session.status] : "Waiting"}</strong>
         </div>
         <button className="phone-test" type="button" onClick={testHaptics}>
-          Test haptics
+          Test my phone
         </button>
       </section>
 
       <section className="lane-picker" aria-label="Lane selection">
         <button type="button" className="lane-choice auto" onClick={() => join()}>
-          Auto assign
+          Pick for me
         </button>
         {snapshot?.lanes.map((lane) => (
           <button

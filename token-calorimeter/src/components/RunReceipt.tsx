@@ -9,7 +9,7 @@ export function RunReceipt() {
   const simplified = snapshot.simplifiedResult;
 
   return (
-    <aside data-testid="receipt" className="museum-panel min-h-[520px] p-4 sm:p-5">
+    <aside data-testid="receipt" className="surface receipt-panel min-h-[500px] p-4 sm:p-5">
       <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-brass">
         <ReceiptText size={15} /> Receipt
       </div>
@@ -47,15 +47,15 @@ export function RunReceipt() {
             </div>
           ) : null}
 
-          <div className="rounded-md bg-ember/15 p-4 text-center text-lg font-black text-ember">
+          <div className="receipt-callout rounded-md bg-ember/10 p-4 text-center text-base font-black text-ember">
             Same message. Smaller fire.
           </div>
         </div>
       ) : (
-        <div className="mt-8 grid gap-4 text-sm leading-6 text-enamel/68">
-          <p>The receipt prints after Ignite compares the elaborate swarm against one direct call.</p>
-          <div className="rounded-md border border-dashed border-brass/30 p-4">
-            Waiting for heat, tokens, and a small amount of theatrical regret.
+        <div className="empty-receipt mt-8 grid gap-4 text-sm leading-6 text-enamel/68">
+          <p>Ignite prints a side-by-side receipt for tokens, cost, and latency.</p>
+          <div className="rounded-md border border-dashed border-line p-4">
+            Waiting for a run.
           </div>
         </div>
       )}
@@ -65,7 +65,7 @@ export function RunReceipt() {
 
 function OutputBlock({ title, output, hot = false }: { title: string; output: string; hot?: boolean }) {
   return (
-    <div className={`rounded-md border p-3 ${hot ? "border-copper/45 bg-copper/10" : "border-brass/25 bg-iron/55"}`}>
+    <div className={`output-block rounded-md border p-3 ${hot ? "border-copper/35 bg-copper/10" : "border-line bg-panel/58"}`}>
       <div className="text-xs font-bold uppercase tracking-[0.16em] text-brass">{title}</div>
       <p className="mt-2 text-sm leading-6 text-enamel/82">{output}</p>
     </div>
@@ -74,7 +74,7 @@ function OutputBlock({ title, output, hot = false }: { title: string; output: st
 
 function ReceiptMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-brass/20 bg-soot/48 p-3">
+    <div className="metric-tile rounded-md border border-line bg-soot/42 p-3">
       <div className="text-[10px] uppercase tracking-[0.14em] text-enamel/48">{label}</div>
       <div className="mt-1 text-base font-black">{value}</div>
     </div>

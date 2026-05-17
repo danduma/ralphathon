@@ -9,9 +9,9 @@ export function EventLog({ events, compact = false }: EventLogProps) {
   const visibleEvents = [...events].slice(compact ? -8 : -18).reverse();
 
   return (
-    <section className="event-log" aria-label="Typed race event log">
+    <section className="event-log" aria-label="Race log">
       <header className="panel-header">
-        <span>Event stream</span>
+        <span>Race log</span>
         <strong>{events.length}</strong>
       </header>
       <div className="log-list">

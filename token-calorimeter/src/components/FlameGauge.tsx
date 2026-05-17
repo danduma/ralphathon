@@ -14,14 +14,14 @@ export function FlameGauge() {
   const smoke = wasteRatio > 3 || flameIntensity > 0.68;
 
   return (
-    <div className="grid place-items-center border-b border-brass/20 p-4">
-      <div className="relative flex h-[238px] w-full max-w-[180px] flex-col items-center justify-end rounded-md border border-copper/40 bg-[linear-gradient(180deg,oklch(0.16_0.02_70),oklch(0.09_0.015_70))] p-3 shadow-furnace">
+    <div className="grid place-items-center border-b border-line p-4">
+      <div className="furnace-case relative flex h-[230px] w-full max-w-[178px] flex-col items-center justify-end rounded-md border border-copper/32 p-3 shadow-furnace">
         <div className="absolute left-3 top-3 flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-copper">
           <Flame size={14} /> Furnace
         </div>
         {smoke ? <div className="smoke" /> : null}
         <div className="furnace-window">
-          <div className="flame-core" style={{ height: `${flameIntensity * 100}%` }} />
+          <div data-testid="flame-core" className="flame-core" style={{ height: `${flameIntensity * 100}%` }} />
           <div className="flame-lip" style={{ height: `${Math.max(20, flameIntensity * 80)}%` }} />
         </div>
       </div>
@@ -37,7 +37,7 @@ export function FlameGauge() {
 
 function Metric({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
-    <div className="rounded-md border border-brass/20 bg-soot/55 px-2 py-2">
+    <div className="metric-tile rounded-md border border-line bg-soot/45 px-2 py-2">
       <div className="text-[10px] uppercase tracking-[0.14em] text-enamel/48">{label}</div>
       <div data-testid={testId} className="mt-1 text-sm font-bold text-enamel">
         {value}

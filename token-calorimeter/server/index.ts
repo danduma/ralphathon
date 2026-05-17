@@ -5,16 +5,44 @@ import { z } from "zod";
 import { runSimpleWorkflow, runSimplifyWorkflow, runSwarmWorkflow } from "./agentWorkflow";
 import { createModelClient } from "./openaiClient";
 import { closeSse, setSseHeaders, writeSseEvent } from "./sse";
-import type { AgentTrace, WorkflowEvent } from "./types";
+import type { WorkflowEvent } from "./types";
 
 dotenv.config();
 
 const app = express();
 const port = Number(process.env.PORT || 8787);
+const agentRoleSchema = z.enum([
+  "planner",
+  "contextResearcher",
+  "toneAnalyst",
+  "riskReviewer",
+  "finalWriter",
+  "verifier",
+  "simplifier",
+  "simpleWriter"
+]);
+const metricsSchema = z.object({
+  inputTokens: z.number().nonnegative(),
+  outputTokens: z.number().nonnegative(),
+  totalTokens: z.number().nonnegative(),
+  estimatedCostUsd: z.number().nonnegative(),
+  elapsedMs: z.number().nonnegative()
+});
+const agentTraceSchema = z.object({
+  id: z.string().min(1),
+  role: agentRoleSchema,
+  label: z.string().min(1),
+  status: z.enum(["queued", "running", "done", "error"]),
+  promptSummary: z.string(),
+  output: z.string(),
+  metrics: metricsSchema,
+  startedAt: z.number(),
+  endedAt: z.number().optional()
+});
 const runSchema = z.object({ task: z.string().trim().min(1) });
 const simplifySchema = z.object({
   task: z.string().trim().min(1),
-  swarmTrace: z.array(z.custom<AgentTrace>())
+  swarmTrace: z.array(agentTraceSchema)
 });
 
 app.use(cors());
@@ -80,6 +108,8 @@ function friendlyErrorMessage(error: unknown): string {
 }
 
 function errorDetails(error: unknown): string | undefined {
+  const typed = error as Error & { details?: string };
+  if (typed?.details) return typed.details;
   if (error instanceof z.ZodError) return error.issues.map((issue) => issue.message).join("; ");
   if (error instanceof Error) return error.stack || error.message;
   return String(error);

@@ -4,6 +4,7 @@ export const eventTypes = [
   "phone.assigned",
   "phone.haptics_tested",
   "race.countdown_started",
+  "race.haptics_stopped",
   "agent.started",
   "agent.planned",
   "agent.tool_called",
@@ -145,12 +146,17 @@ export interface PresenterResetMessage {
   type: "presenter.reset";
 }
 
+export interface PresenterStopHapticsMessage {
+  type: "presenter.stop_haptics";
+}
+
 export type ClientMessage =
   | ClientHelloMessage
   | JoinLaneMessage
   | HapticsResultMessage
   | PresenterStartMessage
-  | PresenterResetMessage;
+  | PresenterResetMessage
+  | PresenterStopHapticsMessage;
 
 export interface ServerSnapshotMessage {
   type: "server.snapshot";

@@ -5,6 +5,7 @@ export type AgentRole =
   | "riskReviewer"
   | "finalWriter"
   | "verifier"
+  | "simplifier"
   | "simpleWriter";
 
 export type RunMode = "swarm" | "simple" | "simplified";

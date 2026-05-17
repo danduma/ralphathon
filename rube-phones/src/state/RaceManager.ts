@@ -84,6 +84,10 @@ export class RaceManager {
     this.send({ type: "presenter.reset" });
   }
 
+  stopHaptics(): void {
+    this.send({ type: "presenter.stop_haptics" });
+  }
+
   private send(message: ClientMessage): void {
     this.socket?.send(message);
   }
